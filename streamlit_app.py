@@ -1,6 +1,7 @@
 
 import streamlit as st
 import openai
+import fitz  # PyMuPDF
 
 st.set_page_config(page_title="Showrunner AI", page_icon="🎬")
 
@@ -11,7 +12,7 @@ st.write("Upload a script or idea, enter a prompt, and generate creative outputs
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # UI elements
-uploaded_file = st.file_uploader("📄 Upload a script or idea (.txt)", type=["txt"])
+uploaded_file = st.file_uploader("📄 Upload a script or idea (.txt or .pdf)", type=["txt", "pdf"])
 prompt = st.text_input("💡 Enter a prompt or instruction:")
 
 input_text = ""
@@ -21,9 +22,14 @@ characters = st.session_state.get("characters", "")
 scenes = st.session_state.get("scenes", "")
 history = st.session_state.get("history", [])
 
-# Read uploaded file
+# Read uploaded file (.txt or .pdf)
 if uploaded_file is not None:
-    input_text = uploaded_file.read().decode("utf-8")
+    if uploaded_file.type == "application/pdf":
+        with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
+            input_text = "\n".join(page.get_text() for page in doc)
+    else:
+        input_text = uploaded_file.read().decode("utf-8")
+
     st.text_area("📖 Uploaded File Content", input_text, height=200)
 
 # Function to call OpenAI
