@@ -16,6 +16,7 @@ prompt = st.text_input("💡 Enter a prompt or instruction:")
 
 input_text = ""
 output_text = st.session_state.get("output_text", "")
+editable_output = st.session_state.get("editable_output", "")
 
 # Read uploaded file
 if uploaded_file is not None:
@@ -47,6 +48,7 @@ if prompt and input_text:
             with st.spinner("Calling the AI Showrunner..."):
                 output_text = generate_output()
                 st.session_state["output_text"] = output_text
+                st.session_state["editable_output"] = output_text
                 st.success("✅ Draft generated successfully!")
 
     with col2:
@@ -54,12 +56,14 @@ if prompt and input_text:
             with st.spinner("Getting a fresh take..."):
                 output_text = generate_output()
                 st.session_state["output_text"] = output_text
+                st.session_state["editable_output"] = output_text
                 st.success("🔄 Reroll complete!")
 
     if output_text:
-        st.markdown("### 📝 AI-Generated Script", unsafe_allow_html=True)
-        st.markdown(output_text)
-        st.download_button("💾 Download Script", output_text, file_name="script.txt")
+        st.markdown("### ✏️ Editable Script", unsafe_allow_html=True)
+        editable_output = st.text_area("📝 Edit your script below:", editable_output, height=300)
+        st.session_state["editable_output"] = editable_output
+        st.download_button("💾 Download Script", editable_output, file_name="script.txt")
 elif prompt and not input_text:
     st.warning("⚠️ Please upload a file before generating.")
 
