@@ -59,6 +59,7 @@ if prompt and input_text:
     if output_text:
         st.markdown("### 📝 AI-Generated Script", unsafe_allow_html=True)
         st.markdown(output_text)
+        st.download_button("💾 Download Script", output_text, file_name="script.txt")
 elif prompt and not input_text:
     st.warning("⚠️ Please upload a file before generating.")
 
