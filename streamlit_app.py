@@ -75,12 +75,15 @@ Script:
 if output_text:
     st.markdown("---")
     st.subheader("🔊 AI Voiceover")
+
+    selected_voice = st.selectbox("🎙 Choose a voice", options=["alloy", "echo", "fable", "onyx", "nova", "shimmer"], index=0)
+
     if st.button("🎤 Generate Voiceover (.mp3)"):
         try:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as audio_file:
                 response = openai.audio.speech.create(
                     model="tts-1",
-                    voice="alloy",
+                    voice=selected_voice,
                     input=output_text
                 )
                 response.stream_to_file(audio_file.name)
