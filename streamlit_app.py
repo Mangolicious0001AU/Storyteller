@@ -20,6 +20,7 @@ output_text = st.session_state.get("output_text", "")
 editable_output = st.session_state.get("editable_output", "")
 characters = st.session_state.get("characters", "")
 scenes = st.session_state.get("scenes", "")
+character_sheet = st.session_state.get("character_sheet", "")
 history = st.session_state.get("history", [])
 upload_characters = ""
 
@@ -35,7 +36,7 @@ if uploaded_file is not None:
 
     if input_text:
         try:
-            detect_prompt = f"""List all characters mentioned in this text:
+            detect_prompt = f"""List all characters mentioned in this script:
 
 {input_text}"""
             detect_response = openai.ChatCompletion.create(
@@ -86,6 +87,25 @@ def analyze_script(script_text):
     )
     return char_response["choices"][0]["message"]["content"], scene_response["choices"][0]["message"]["content"]
 
+def build_character_sheet(script_text):
+    profile_prompt = f"""Using this script, generate a character sheet for each named character. 
+For each character include:
+- Name
+- Brief biography / backstory
+- Personality traits
+- Relationships to others
+- Voice style or speech quirks
+
+---
+
+{script_text}"""
+    result = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": profile_prompt}],
+        temperature=0.7
+    )
+    return result["choices"][0]["message"]["content"]
+
 # Buttons to generate and reroll
 if prompt and input_text:
     col1, col2 = st.columns([1, 1])
@@ -113,12 +133,21 @@ if prompt and input_text:
         st.session_state["editable_output"] = editable_output
         st.download_button("💾 Download Script", editable_output, file_name="script.txt")
 
-        if st.button("🎭 Analyze Characters & Scenes"):
-            with st.spinner("Analyzing script..."):
-                characters, scenes = analyze_script(editable_output)
-                st.session_state["characters"] = characters
-                st.session_state["scenes"] = scenes
-                st.success("🧠 Analysis complete!")
+        col3, col4 = st.columns([1, 1])
+        with col3:
+            if st.button("🎭 Analyze Characters & Scenes"):
+                with st.spinner("Analyzing script..."):
+                    characters, scenes = analyze_script(editable_output)
+                    st.session_state["characters"] = characters
+                    st.session_state["scenes"] = scenes
+                    st.success("🧠 Analysis complete!")
+
+        with col4:
+            if st.button("🧬 Full Character Sheets"):
+                with st.spinner("Building detailed character bios..."):
+                    character_sheet = build_character_sheet(editable_output)
+                    st.session_state["character_sheet"] = character_sheet
+                    st.success("🗂 Character profiles ready!")
 
         if characters:
             st.markdown("### 🎭 Characters from Generated Draft")
@@ -127,6 +156,10 @@ if prompt and input_text:
         if scenes:
             st.markdown("### 🎬 Scene Breakdown")
             st.markdown(scenes)
+
+        if character_sheet:
+            st.markdown("### 🗂 Full Character Sheets")
+            st.markdown(character_sheet)
 
 if history:
     st.markdown("### 🕓 Prompt History")
