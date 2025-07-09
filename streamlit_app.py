@@ -42,10 +42,9 @@ if prompt and input_text:
                 )
                 output_text = response["choices"][0]["message"]["content"]
                 st.success("✅ Draft generated successfully!")
-                st.text_area("📝 AI-Generated Script", output_text, height=300)
+                st.markdown("### 📝 AI-Generated Script", unsafe_allow_html=True)
+                st.markdown(output_text)
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
 elif prompt and not input_text:
     st.warning("⚠️ Please upload a file before generating.")
-
-# Force redeploy: minor update
