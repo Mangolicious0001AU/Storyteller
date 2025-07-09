@@ -82,48 +82,44 @@ if st.button("🔁 Reroll Alternate Take") and input_text:
         st.session_state["storyboard_output"] = output_text
 
 if output_text:
-    st.markdown("## 🖼️ Storyboard Scenes")
+    # TXT Download
+    st.download_button(
+        "⬇️ Download Scenes as TXT",
+        output_text,
+        file_name="storyboard_scenes.txt",
+        mime="text/plain"
+    )
 
-        # Persistent memory: allow user to download scenes as .txt or .json
-        if output_text:
-            st.download_button(
-                "⬇️ Download Scenes as TXT",
-                output_text,
-                file_name="storyboard_scenes.txt",
-                mime="text/plain"
-            )
+    # JSON Download
+    import json
+    scene_data = {
+        "prompt": prompt,
+        "content": output_text
+    }
+    st.download_button(
+        "⬇️ Download Scenes as JSON",
+        json.dumps(scene_data, indent=2),
+        file_name="storyboard_scenes.json",
+        mime="application/json"
+    )
 
-            import json
-            scene_data = {
-                "prompt": prompt,
-                "content": output_text
-            }
-            
-            # PDF Export
-            from fpdf import FPDF
-            import io
+    # PDF Download
+    from fpdf import FPDF
+    import io
 
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            pdf.multi_cell(0, 10, f"Prompt:\n{prompt}\n\nGenerated Scenes:\n\n{output_text}")
-            pdf_output = io.BytesIO()
-            pdf.output(pdf_output)
-            st.download_button(
-                "⬇️ Download Scenes as PDF",
-                data=pdf_output.getvalue(),
-                file_name="storyboard_scenes.pdf",
-                mime="application/pdf"
-            )
-
-st.download_button(
-                "⬇️ Download Scenes as JSON",
-                json.dumps(scene_data, indent=2),
-                file_name="storyboard_scenes.json",
-                mime="application/json"
-            )
-    
-    st.text(output_text)
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, f"Prompt:\n{prompt}\n\nGenerated Scenes:\n\n{output_text}")
+    pdf_output = io.BytesIO()
+    pdf.output(pdf_output)
+    pdf_output.seek(0)
+    st.download_button(
+        "⬇️ Download Scenes as PDF",
+        data=pdf_output,
+        file_name="storyboard_scenes.pdf",
+        mime="application/pdf"
+    )
 
 # TTS Voiceover from Generated Scenes
 if output_text:
