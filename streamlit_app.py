@@ -44,11 +44,12 @@ if uploaded_file is not None:
     st.text_area("📖 Uploaded or Transcribed Content", input_text, height=200)
 
 # Visual Storyboard Generator
-output_text = ""
-if st.button("🖼️ Generate Visual Storyboard") and input_text:
-    with st.spinner("Extracting storyboard-worthy scenes..."):
-        try:
-            scene_extract_prompt = f"""Break this script into 5 visual moments, each as a scene description suitable for storyboard art. 
+output_text = st.session_state.get("storyboard_output", "")
+reroll_requested = False
+
+def generate_storyboard(prompt_input):
+    try:
+        scene_extract_prompt = f"""Break this script into 5 visual moments, each as a scene description suitable for storyboard art. 
 Each should include:
 - Scene title
 - Short description of what's happening
@@ -56,20 +57,33 @@ Each should include:
 - Camera angle or framing
 
 Script:
-{input_text}"""
+{prompt_input}"""
 
-            response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[{"role": "user", "content": scene_extract_prompt}],
-                temperature=0.7,
-                max_tokens=1200
-            )
-            output_text = response["choices"][0]["message"]["content"]
-            st.markdown("## 🖼️ Storyboard Scenes")
-            st.text(output_text)
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": scene_extract_prompt}],
+            temperature=0.9,
+            max_tokens=1200
+        )
+        return response["choices"][0]["message"]["content"]
+    except Exception as e:
+        st.error(f"Storyboard generation failed: {e}")
+        return ""
 
-        except Exception as e:
-            st.error(f"Storyboard generation failed: {e}")
+if st.button("🖼️ Generate Visual Storyboard") and input_text:
+    with st.spinner("Extracting storyboard-worthy scenes..."):
+        output_text = generate_storyboard(input_text)
+        st.session_state["storyboard_output"] = output_text
+
+if st.button("🔁 Reroll Alternate Take") and input_text:
+    reroll_requested = True
+    with st.spinner("Generating alternate storyboard..."):
+        output_text = generate_storyboard(input_text)
+        st.session_state["storyboard_output"] = output_text
+
+if output_text:
+    st.markdown("## 🖼️ Storyboard Scenes")
+    st.text(output_text)
 
 # TTS Voiceover from Generated Scenes
 if output_text:
