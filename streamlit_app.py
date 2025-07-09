@@ -47,3 +47,5 @@ if prompt and input_text:
                 st.error(f"❌ Error: {str(e)}")
 elif prompt and not input_text:
     st.warning("⚠️ Please upload a file before generating.")
+
+# Force redeploy: minor update
