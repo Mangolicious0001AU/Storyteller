@@ -19,6 +19,7 @@ output_text = st.session_state.get("output_text", "")
 editable_output = st.session_state.get("editable_output", "")
 characters = st.session_state.get("characters", "")
 scenes = st.session_state.get("scenes", "")
+history = st.session_state.get("history", [])
 
 # Read uploaded file
 if uploaded_file is not None:
@@ -71,6 +72,7 @@ if prompt and input_text:
                 output_text = generate_output()
                 st.session_state["output_text"] = output_text
                 st.session_state["editable_output"] = output_text
+                st.session_state["history"] = [(prompt, output_text)] + history[:4]
                 st.success("✅ Draft generated successfully!")
 
     with col2:
@@ -79,6 +81,7 @@ if prompt and input_text:
                 output_text = generate_output()
                 st.session_state["output_text"] = output_text
                 st.session_state["editable_output"] = output_text
+                st.session_state["history"] = [(prompt, output_text)] + history[:4]
                 st.success("🔄 Reroll complete!")
 
     if output_text:
@@ -101,6 +104,12 @@ if prompt and input_text:
         if scenes:
             st.markdown("### 🎬 Scene Breakdown")
             st.markdown(scenes)
+
+if history:
+    st.markdown("### 🕓 Prompt History")
+    for i, (h_prompt, h_output) in enumerate(history):
+        with st.expander(f"Prompt {i+1}: {h_prompt[:60]}..."):
+            st.markdown(h_output)
 
 elif prompt and not input_text:
     st.warning("⚠️ Please upload a file before generating.")
