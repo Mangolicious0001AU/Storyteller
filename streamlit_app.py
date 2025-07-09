@@ -44,6 +44,7 @@ if uploaded_file is not None:
     st.text_area("📖 Uploaded or Transcribed Content", input_text, height=200)
 
 # Visual Storyboard Generator
+output_text = ""
 if st.button("🖼️ Generate Visual Storyboard") and input_text:
     with st.spinner("Extracting storyboard-worthy scenes..."):
         try:
@@ -63,12 +64,31 @@ Script:
                 temperature=0.7,
                 max_tokens=1200
             )
-            scenes = response["choices"][0]["message"]["content"]
+            output_text = response["choices"][0]["message"]["content"]
             st.markdown("## 🖼️ Storyboard Scenes")
-            st.text(scenes)
+            st.text(output_text)
 
         except Exception as e:
             st.error(f"Storyboard generation failed: {e}")
+
+# TTS Voiceover from Generated Scenes
+if output_text:
+    st.markdown("---")
+    st.subheader("🔊 AI Voiceover")
+    if st.button("🎤 Generate Voiceover (.mp3)"):
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as audio_file:
+                response = openai.audio.speech.create(
+                    model="tts-1",
+                    voice="alloy",
+                    input=output_text
+                )
+                response.stream_to_file(audio_file.name)
+                st.audio(audio_file.name, format="audio/mp3")
+                with open(audio_file.name, "rb") as f:
+                    st.download_button("⬇️ Download Voiceover", f, file_name="voiceover.mp3")
+        except Exception as e:
+            st.error(f"Failed to generate voiceover: {e}")
 
 elif prompt and not input_text:
     st.warning("⚠️ Please upload a file before generating.")
