@@ -21,6 +21,7 @@ editable_output = st.session_state.get("editable_output", "")
 characters = st.session_state.get("characters", "")
 scenes = st.session_state.get("scenes", "")
 character_sheet = st.session_state.get("character_sheet", "")
+scene_tags = st.session_state.get("scene_tags", "")
 history = st.session_state.get("history", [])
 upload_characters = ""
 
@@ -106,6 +107,23 @@ For each character include:
     )
     return result["choices"][0]["message"]["content"]
 
+def tag_emotions_and_themes(script_text):
+    tagging_prompt = f"""Analyze this script and break it down by scene.
+For each scene, provide:
+- A brief summary
+- The dominant emotions present (e.g. fear, joy, tension, grief)
+- Key narrative themes (e.g. betrayal, redemption, friendship)
+
+---
+
+{script_text}"""
+    result = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": tagging_prompt}],
+        temperature=0.7
+    )
+    return result["choices"][0]["message"]["content"]
+
 # Buttons to generate and reroll
 if prompt and input_text:
     col1, col2 = st.columns([1, 1])
@@ -149,6 +167,12 @@ if prompt and input_text:
                     st.session_state["character_sheet"] = character_sheet
                     st.success("🗂 Character profiles ready!")
 
+        if st.button("🎯 Emotion & Theme Tags"):
+            with st.spinner("Scanning scene-level emotions and themes..."):
+                scene_tags = tag_emotions_and_themes(editable_output)
+                st.session_state["scene_tags"] = scene_tags
+                st.success("🎨 Scene tagging complete!")
+
         if characters:
             st.markdown("### 🎭 Characters from Generated Draft")
             st.markdown(characters)
@@ -160,6 +184,10 @@ if prompt and input_text:
         if character_sheet:
             st.markdown("### 🗂 Full Character Sheets")
             st.markdown(character_sheet)
+
+        if scene_tags:
+            st.markdown("### 🎯 Emotion & Theme Tags per Scene")
+            st.markdown(scene_tags)
 
 if history:
     st.markdown("### 🕓 Prompt History")
