@@ -15,6 +15,8 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 uploaded_file = st.file_uploader("📄 Upload a script or idea (.txt or .pdf)", type=["txt", "pdf"])
 prompt = st.text_input("💡 Enter a prompt or instruction:")
 
+genre_option = st.selectbox("🎭 Choose style for rewrite (optional):", ["None", "Noir", "Comedy", "Horror", "Fantasy", "Sci-Fi"])
+
 input_text = ""
 output_text = st.session_state.get("output_text", "")
 editable_output = st.session_state.get("editable_output", "")
@@ -22,6 +24,7 @@ characters = st.session_state.get("characters", "")
 scenes = st.session_state.get("scenes", "")
 character_sheet = st.session_state.get("character_sheet", "")
 scene_tags = st.session_state.get("scene_tags", "")
+styled_output = st.session_state.get("styled_output", "")
 history = st.session_state.get("history", [])
 upload_characters = ""
 
@@ -124,6 +127,20 @@ For each scene, provide:
     )
     return result["choices"][0]["message"]["content"]
 
+def rewrite_in_genre(script_text, genre):
+    genre_prompt = f"""Rewrite the following script in the style of {genre}. Keep the plot and characters consistent, but adapt the tone, dialogue, and setting as appropriate.
+
+---
+
+{script_text}"""
+    result = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": genre_prompt}],
+        temperature=0.8,
+        max_tokens=1200
+    )
+    return result["choices"][0]["message"]["content"]
+
 # Buttons to generate and reroll
 if prompt and input_text:
     col1, col2 = st.columns([1, 1])
@@ -173,6 +190,12 @@ if prompt and input_text:
                 st.session_state["scene_tags"] = scene_tags
                 st.success("🎨 Scene tagging complete!")
 
+        if genre_option != "None" and st.button("🎨 Rewrite in Selected Genre"):
+            with st.spinner(f"Rewriting script in {genre_option} style..."):
+                styled_output = rewrite_in_genre(editable_output, genre_option)
+                st.session_state["styled_output"] = styled_output
+                st.success("🎭 Genre rewrite complete!")
+
         if characters:
             st.markdown("### 🎭 Characters from Generated Draft")
             st.markdown(characters)
@@ -188,6 +211,10 @@ if prompt and input_text:
         if scene_tags:
             st.markdown("### 🎯 Emotion & Theme Tags per Scene")
             st.markdown(scene_tags)
+
+        if styled_output:
+            st.markdown(f"### 🎨 Script Rewritten in {genre_option} Style")
+            st.markdown(styled_output)
 
 if history:
     st.markdown("### 🕓 Prompt History")
