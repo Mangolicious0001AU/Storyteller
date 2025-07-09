@@ -27,11 +27,11 @@ if prompt and input_text:
         with st.spinner("Calling the AI Showrunner..."):
             try:
                 # Call OpenAI API
-                full_prompt = f"{prompt}
+                full_prompt = f"""{prompt}
 
 ---
 
-{input_text}"
+{input_text}"""
                 response = openai.ChatCompletion.create(
                     model="gpt-4",
                     messages=[
