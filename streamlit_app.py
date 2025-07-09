@@ -21,6 +21,7 @@ editable_output = st.session_state.get("editable_output", "")
 characters = st.session_state.get("characters", "")
 scenes = st.session_state.get("scenes", "")
 history = st.session_state.get("history", [])
+upload_characters = ""
 
 # Read uploaded file (.txt or .pdf)
 if uploaded_file is not None:
@@ -31,6 +32,22 @@ if uploaded_file is not None:
         input_text = uploaded_file.read().decode("utf-8")
 
     st.text_area("📖 Uploaded File Content", input_text, height=200)
+
+    if input_text:
+        try:
+            detect_prompt = f"""List all characters mentioned in this text:
+
+{input_text}"""
+            detect_response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": detect_prompt}],
+                temperature=0.5
+            )
+            upload_characters = detect_response["choices"][0]["message"]["content"]
+            st.markdown("### 👤 Characters Detected from Uploaded Script")
+            st.markdown(upload_characters)
+        except Exception as e:
+            st.warning(f"Character detection failed: {e}")
 
 # Function to call OpenAI
 def generate_output():
@@ -104,7 +121,7 @@ if prompt and input_text:
                 st.success("🧠 Analysis complete!")
 
         if characters:
-            st.markdown("### 🎭 Characters")
+            st.markdown("### 🎭 Characters from Generated Draft")
             st.markdown(characters)
 
         if scenes:
