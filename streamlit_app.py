@@ -43,12 +43,12 @@ def generate_output():
     return response["choices"][0]["message"]["content"]
 
 def analyze_script(script_text):
-    char_prompt = f"List all characters mentioned in this script:
+    char_prompt = f"""List all characters mentioned in this script:
 
-{script_text}"
-    scene_prompt = f"Break this script into scenes with short summaries:
+{script_text}"""
+    scene_prompt = f"""Break this script into scenes with short summaries:
 
-{script_text}"
+{script_text}"""
 
     char_response = openai.ChatCompletion.create(
         model="gpt-4",
