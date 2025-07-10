@@ -60,7 +60,7 @@ Script:
 {prompt_input}"""
 
         response = openai.chat.completions.create(
-            model="gpt-4-turbo",
+            model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": scene_extract_prompt}],
             temperature=0.9,
             max_tokens=1200
@@ -130,7 +130,7 @@ Script:
 {input_text}"""
 
             response = openai.chat.completions.create(
-                model="gpt-4-turbo",
+                model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": character_prompt}],
                 temperature=0.3,
                 max_tokens=700
